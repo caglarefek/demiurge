@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { LuLayoutDashboard, LuUsers, LuMap, LuScroll, LuSwords, LuPlus, LuChevronLeft } from "react-icons/lu";
+import { LuLayoutDashboard, LuUsers, LuMap, LuScroll, LuSwords, LuPlus, LuX, LuChevronLeft } from "react-icons/lu";
 
 function UniverseDashboard() {
     const { id } = useParams();
