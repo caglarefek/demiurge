@@ -26,7 +26,7 @@ const EntitySchema = new mongoose.Schema({
     // Esnek özellik listesi (Örn: [{ key: "Güç", value: "18" }, { key: "Sınıf", value: "Büyücü" }])
     attributes: [{
         key: { type: String, required: true },
-        value: { type: String, required: true }
+        value: { type: String, default: '' }
     }],
     // İleride buraya 'attributes' (Güç, Çeviklik vb.) ekleyeceğiz.
     createdAt: {

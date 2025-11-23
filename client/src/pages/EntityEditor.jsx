@@ -1,9 +1,7 @@
-// client/src/pages/EntityEditor.jsx (TAMAMI)
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { LuChevronLeft } from "react-icons/lu"; // <-- Eksik olan ikon buraya eklendi!
+import { LuChevronLeft } from "react-icons/lu";
 
 function EntityEditor() {
     const { id } = useParams();
@@ -184,7 +182,9 @@ function EntityEditor() {
                     <div
                         style={{
                             ...styles.portraitImage,
-                            backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                            backgroundImage: imageUrl
+                                ? `linear-gradient(to bottom, rgba(10,10,10,0) 60%, #0a0a0a 100%), url(${imageUrl})`
+                                : 'none',
                         }}
                         onClick={() => fileInputRef.current.click()}
                     >
@@ -199,7 +199,10 @@ function EntityEditor() {
                     {/* Statlar */}
                     <div style={styles.statsSectionSide}>
                         <div style={styles.statsHeader}>
-                            <h3 style={{color: 'var(--text-muted)', margin:0, fontSize:'0.9rem', letterSpacing:'1px'}}>ÖZELLİKLER</h3>
+                            {/* DÜZELTME: Rengi parlattık (var(--text-primary)) ve opacity ekledik */}
+                            <h3 style={{color: 'var(--text-primary)', opacity: 0.8, margin:0, fontSize:'0.9rem', letterSpacing:'2px', fontFamily: 'var(--font-heading)'}}>
+                                ÖZELLİKLER
+                            </h3>
                             <button onClick={addAttribute} style={styles.addStatButton}>+ Ekle</button>
                         </div>
                         <div style={styles.statsGrid}>
@@ -235,17 +238,23 @@ const styles = {
     tabInactive: { backgroundColor: 'transparent', color: 'var(--text-muted)', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.9rem' },
     descInput: { width: '100%', minHeight: '600px', backgroundColor: 'transparent', border: 'none', color: 'var(--text-body)', fontSize: '1.1rem', lineHeight: '1.8', outline: 'none', resize: 'none', fontFamily: 'var(--font-body)', marginTop: '20px', whiteSpace: 'pre-wrap' },
     markdownPreview: { minHeight: '600px', color: 'var(--text-body)', lineHeight: '1.7', fontSize: '1.05rem', fontFamily: 'Georgia, serif', marginTop: '20px' },
+
     sidebarColumn: { flex: 1, minWidth: '300px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' },
     portraitImage: { width: '100%', aspectRatio: '2 / 3', backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-subtle)', backgroundSize: 'cover', backgroundPosition: 'top center', position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)' },
     uploadButtonSmall: { position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', border: '1px solid var(--border-subtle)', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', backdropFilter: 'blur(4px)' },
+
+    // STAT STİLLERİ (DÜZELTİLDİ)
     statsSectionSide: { backgroundColor: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' },
     statsHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
     addStatButton: { backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' },
-    statsGrid: { display: 'flex', flexDirection: 'column', gap: '10px' },
-    statRow: { display: 'flex', gap: '10px', alignItems: 'center' },
-    statInputKey: { flex: 1, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.85rem' },
-    statInputValue: { flex: 2, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '0.85rem' },
-    deleteStatBtn: { backgroundColor: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '0 5px' }
+    statsGrid: { display: 'flex', flexDirection: 'column', gap: '8px' }, // Gap azaltıldı
+    statRow: { display: 'flex', gap: '8px', alignItems: 'center' }, // Gap azaltıldı
+
+    // DÜZELTME: minWidth: 0 eklenerek taşma engellendi
+    statInputKey: { flex: 1, minWidth: 0, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.85rem' },
+    statInputValue: { flex: 1.5, minWidth: 0, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '0.85rem' },
+
+    deleteStatBtn: { backgroundColor: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '0 5px', flexShrink: 0 }
 };
 
 export default EntityEditor;

@@ -1,18 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const Entity = require('../models/Entity');
+const Template = require('../models/Template');
 const upload = require('./uploadMiddleware');
 
-// POST: Yeni bir varlık (Karakter/Mekan) oluştur
+// POST: Yeni bir varlık oluştur (Şablon destekli)
 router.post('/', async (req, res) => {
     try {
-        const { universeId, type, name, description } = req.body;
+        const { universeId, type, name, description, templateId } = req.body;
+
+        // Başlangıç özellikleri boş
+        let initialAttributes = [];
+
+        // Eğer bir şablon seçildiyse, onun özelliklerini kopyala
+        if (templateId) {
+            const template = await Template.findById(templateId);
+            if (template) {
+                // Şablondaki özellikleri al (Key'leri al, Value'ları boş veya varsayılan bırak)
+                initialAttributes = template.attributes.map(attr => ({
+                    key: attr.key,
+                    value: attr.value || ''
+                }));
+            }
+        }
 
         const newEntity = new Entity({
             universe: universeId,
             type,
             name,
-            description
+            description,
+            attributes: initialAttributes // Kopyalanan özellikleri ekle
         });
 
         const savedEntity = await newEntity.save();
