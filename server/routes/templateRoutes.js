@@ -35,4 +35,21 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// PUT: Şablonu güncelle
+router.put('/:id', async (req, res) => {
+    try {
+        const { name, type, attributes } = req.body;
+
+        const updatedTemplate = await Template.findByIdAndUpdate(
+            req.params.id,
+            { name, type, attributes },
+            { new: true } // Güncellenmiş halini döndür
+        );
+
+        res.json(updatedTemplate);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 module.exports = router;
