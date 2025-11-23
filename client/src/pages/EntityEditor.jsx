@@ -1,8 +1,9 @@
-// client/src/pages/EntityEditor.jsx
+// client/src/pages/EntityEditor.jsx (TAMAMI)
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown'; // Kütüphaneyi geri çağırdık
-import WikiLinkRenderer from '../components/WikiLinkRenderer'; // Bunu artık kullanmayacağız ama import kalsa da zarar gelmez
+import ReactMarkdown from 'react-markdown';
+import { LuChevronLeft } from "react-icons/lu"; // <-- Eksik olan ikon buraya eklendi!
 
 function EntityEditor() {
     const { id } = useParams();
@@ -10,7 +11,7 @@ function EntityEditor() {
     const fileInputRef = useRef(null);
 
     const [entity, setEntity] = useState(null);
-    const [allEntities, setAllEntities] = useState([]); // Diğer varlıklar (Linkleme için)
+    const [allEntities, setAllEntities] = useState([]);
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -97,21 +98,14 @@ function EntityEditor() {
         setAttributes(attributes.filter((_, i) => i !== index));
     };
 
-    // --- 3. WIKI LINK DÖNÜŞTÜRÜCÜ (SİHİRLİ KISIM) ---
-    // [[Gandalf]] yazısını bulup [Gandalf](/entity/123) formatına çevirir
+    // --- 3. WIKI LINK DÖNÜŞTÜRÜCÜ ---
     const processMarkdown = (text) => {
         if (!text) return '';
-
-        // Regex: [[...]] arasındaki metni yakala
         return text.replace(/\[\[(.*?)\]\]/g, (match, cleanName) => {
-            // Bu isme sahip varlığı bul
             const target = allEntities.find(e => e.name.toLowerCase() === cleanName.toLowerCase());
-
             if (target) {
-                // Varlık varsa: Standart Markdown Linkine çevir
                 return `[${cleanName}](/entity/${target._id})`;
             } else {
-                // Varlık yoksa: Sadece kalın yaz ama link verme (veya kırmızı yap)
                 return `**${cleanName} (?)**`;
             }
         });
@@ -122,121 +116,136 @@ function EntityEditor() {
     return (
         <div style={styles.container}>
 
-            {/* Kapak Resmi */}
-            <div style={{...styles.coverImage, backgroundImage: imageUrl ? `url(${imageUrl})` : 'none', height: imageUrl ? '300px' : '100px'}}>
-                <div style={styles.coverOverlay}>
-                    <button style={styles.uploadButton} onClick={() => fileInputRef.current.click()}>
-                        {uploading ? 'Yükleniyor...' : '📷 Kapak Resmi Ekle/Değiştir'}
+            {/* Üst Bar */}
+            <div style={styles.topBar}>
+                <div style={{display:'flex', gap:'10px'}}>
+                    <button onClick={() => navigate(-1)} style={styles.backButton}>
+                        <LuChevronLeft /> Geri
                     </button>
-                    <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*"/>
+                    <button onClick={handleDelete} style={styles.deleteButton}>🗑️ Sil</button>
                 </div>
+
+                <span style={styles.typeTag}>{entity.type.toUpperCase()}</span>
+
+                <button onClick={handleSave} style={styles.saveButton}>
+                    {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
             </div>
 
-            <div style={styles.editorContainer}>
-                {/* Üst Bar */}
-                <div style={styles.topBar}>
-                    <div style={{display:'flex', gap:'10px'}}>
-                        <button onClick={() => navigate(-1)} style={styles.backButton}>← Geri</button>
-                        <button onClick={handleDelete} style={styles.deleteButton}>🗑️ Sil</button>
-                    </div>
-                    <span style={styles.typeTag}>{entity.type.toUpperCase()}</span>
-                    <button onClick={handleSave} style={styles.saveButton}>{isSaving ? 'Kaydediliyor...' : 'Kaydet'}</button>
-                </div>
+            {/* --- İKİ SÜTUNLU ANA YAPI --- */}
+            <div style={styles.contentFlex}>
 
-                {/* Başlık Input */}
-                <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    style={styles.titleInput}
-                    placeholder="İsimsiz Varlık"
-                />
-
-                {/* Sekmeler */}
-                <div style={styles.tabContainer}>
-                    <button onClick={() => setViewMode('write')} style={viewMode === 'write' ? styles.tabActive : styles.tabInactive}>✏️ Yaz</button>
-                    <button onClick={() => setViewMode('preview')} style={viewMode === 'preview' ? styles.tabActive : styles.tabInactive}>👁️ Önizleme</button>
-                </div>
-
-                {/* --- İÇERİK ALANI --- */}
-                {viewMode === 'write' ? (
-                    <textarea
-                        value={description || ''}
-                        onChange={(e) => setDescription(e.target.value)}
-                        style={styles.descInput}
-                        placeholder="Hikayeni Markdown formatında yaz... (# Başlık, **Kalın**, [[WikiLink]])"
+                {/* === SOL SÜTUN: EDİTÖR === */}
+                <div style={styles.mainColumn}>
+                    {/* Başlık Input */}
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        style={styles.titleInput}
+                        placeholder="İsimsiz Varlık"
+                        spellCheck="false"
                     />
-                ) : (
-                    <div style={styles.markdownPreview}>
-                        {/* ReactMarkdown Kullanıyoruz */}
-                        <ReactMarkdown
-                            components={{
-                                // Linklerin sayfa yenilememesi için özel ayar
+
+                    {/* Sekmeler */}
+                    <div style={styles.tabContainer}>
+                        <button onClick={() => setViewMode('write')} style={viewMode === 'write' ? styles.tabActive : styles.tabInactive}>✏️ Yaz</button>
+                        <button onClick={() => setViewMode('preview')} style={viewMode === 'preview' ? styles.tabActive : styles.tabInactive}>👁️ Önizleme</button>
+                    </div>
+
+                    {/* İçerik Alanı */}
+                    {viewMode === 'write' ? (
+                        <textarea
+                            value={description || ''}
+                            onChange={(e) => setDescription(e.target.value)}
+                            style={styles.descInput}
+                            placeholder="Hikayeni Markdown formatında yaz..."
+                            spellCheck="false"
+                        />
+                    ) : (
+                        <div style={styles.markdownPreview}>
+                            <ReactMarkdown components={{
                                 a: ({node, ...props}) => (
                                     <Link to={props.href} style={{color: '#d4d4d8', textDecoration: 'underline', fontWeight: 'bold'}}>
                                         {props.children}
                                     </Link>
                                 )
-                            }}
-                        >
-                            {processMarkdown(description)}
-                        </ReactMarkdown>
-                    </div>
-                )}
-
-                {/* Statlar */}
-                <div style={styles.statsSection}>
-                    <div style={styles.statsHeader}>
-                        <h3 style={{color: '#888', margin:0, fontSize:'1rem'}}>Özellikler & Statlar</h3>
-                        <button onClick={addAttribute} style={styles.addStatButton}>+ Ekle</button>
-                    </div>
-                    <div style={styles.statsGrid}>
-                        {attributes.map((attr, index) => (
-                            <div key={index} style={styles.statRow}>
-                                <input placeholder="Özellik" value={attr.key} onChange={(e) => handleAttributeChange(index, 'key', e.target.value)} style={styles.statInputKey} />
-                                <input placeholder="Değer" value={attr.value} onChange={(e) => handleAttributeChange(index, 'value', e.target.value)} style={styles.statInputValue} />
-                                <button onClick={() => deleteAttribute(index)} style={styles.deleteStatBtn}>×</button>
-                            </div>
-                        ))}
-                    </div>
+                            }}>
+                                {processMarkdown(description)}
+                            </ReactMarkdown>
+                        </div>
+                    )}
                 </div>
+
+                {/* === SAĞ SÜTUN: GÖRSEL VE STATLAR === */}
+                <aside style={styles.sidebarColumn}>
+
+                    {/* Dikey Karakter Resmi */}
+                    <div
+                        style={{
+                            ...styles.portraitImage,
+                            backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                        }}
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        {!imageUrl && <span style={{color:'#666'}}>Resim Yok</span>}
+
+                        <button style={styles.uploadButtonSmall}>
+                            {uploading ? '...' : '📷 Değiştir'}
+                        </button>
+                        <input type="file" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} accept="image/*"/>
+                    </div>
+
+                    {/* Statlar */}
+                    <div style={styles.statsSectionSide}>
+                        <div style={styles.statsHeader}>
+                            <h3 style={{color: 'var(--text-muted)', margin:0, fontSize:'0.9rem', letterSpacing:'1px'}}>ÖZELLİKLER</h3>
+                            <button onClick={addAttribute} style={styles.addStatButton}>+ Ekle</button>
+                        </div>
+                        <div style={styles.statsGrid}>
+                            {attributes.map((attr, index) => (
+                                <div key={index} style={styles.statRow}>
+                                    <input placeholder="Özellik" value={attr.key} onChange={(e) => handleAttributeChange(index, 'key', e.target.value)} style={styles.statInputKey} spellCheck="false" />
+                                    <input placeholder="Değer" value={attr.value} onChange={(e) => handleAttributeChange(index, 'value', e.target.value)} style={styles.statInputValue} spellCheck="false" />
+                                    <button onClick={() => deleteAttribute(index)} style={styles.deleteStatBtn}>×</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                </aside>
 
             </div>
         </div>
     );
 }
 
-// Stillerin aynen kalsın (sadece dosya sonundaki stil objesini değiştirmedim, önceki adımdaki en son halini kullanabilirsin)
-// Ama global CSS (index.css) içindeki input ayarlarını yaptığımızdan emin ol.
 const styles = {
-    container: { height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', overflowY: 'auto' },
-    coverImage: { width: '100%', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#1a1a1a', position: 'relative', transition: 'height 0.3s ease' },
-    coverOverlay: { position: 'absolute', bottom: '10px', right: '20px', opacity: 0.7, transition: 'opacity 0.2s' },
-    uploadButton: { backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid #555', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', backdropFilter: 'blur(4px)' },
-    editorContainer: { maxWidth: '800px', width: '100%', margin: '0 auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' },
-    topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #222', paddingBottom: '10px' },
-    backButton: { background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '1rem' },
-    deleteButton: { backgroundColor: 'transparent', color: '#ff4444', border: '1px solid #ff4444', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', marginLeft:'10px' },
-    saveButton: { backgroundColor: '#ededed', border: 'none', padding: '8px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
-    typeTag: { fontSize: '0.8rem', letterSpacing: '2px', color: '#444' },
-    titleInput: { backgroundColor: 'transparent', border: 'none', borderBottom: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '2.5rem', fontWeight: 'bold', outline: 'none', width: '100%', padding: '10px 0', fontFamily: 'var(--font-heading)' },
-    descInput: { width: '100%', minHeight: '400px', backgroundColor: 'transparent', border: 'none', color: 'var(--text-body)', fontSize: '1.1rem', lineHeight: '1.8', outline: 'none', resize: 'none', fontFamily: 'var(--font-body)', marginTop: '20px', whiteSpace: 'pre-wrap' },
-
-    // Sekmeler
-    tabContainer: { display: 'flex', gap: '10px', marginBottom: '10px', borderBottom: '1px solid #222', paddingBottom: '10px' },
-    tabActive: { backgroundColor: '#222', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' },
-    tabInactive: { backgroundColor: 'transparent', color: '#666', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.9rem' },
-    markdownPreview: { minHeight: '400px', color: '#ccc', lineHeight: '1.7', fontSize: '1.05rem', fontFamily: 'Georgia, serif', paddingBottom: '50px' },
-
-    // Statlar
-    statsSection: { marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #222' },
+    container: { height: '100vh', backgroundColor: 'var(--bg-main)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    topBar: { padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-main)', zIndex: 10 },
+    backButton: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.95rem', display:'flex', alignItems:'center', gap:'5px' },
+    deleteButton: { backgroundColor: 'transparent', color: 'var(--danger)', border: '1px solid var(--danger)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', marginLeft:'10px' },
+    saveButton: { backgroundColor: 'var(--accent)', border: 'none', padding: '8px 25px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', color:'#000' },
+    typeTag: { fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--text-muted)' },
+    contentFlex: { flex: 1, display: 'flex', overflow: 'hidden', padding: '30px', gap: '40px', maxWidth: '1400px', margin: '0 auto', width: '100%' },
+    mainColumn: { flex: 3, overflowY: 'auto', paddingRight: '10px' },
+    titleInput: { backgroundColor: 'transparent', border: 'none', borderBottom: '2px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '2.5rem', fontWeight: 'bold', outline: 'none', width: '100%', padding: '10px 0', fontFamily: 'var(--font-heading)', marginBottom: '20px' },
+    tabContainer: { display: 'flex', gap: '10px', marginBottom: '10px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' },
+    tabActive: { backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-primary)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' },
+    tabInactive: { backgroundColor: 'transparent', color: 'var(--text-muted)', border: 'none', padding: '6px 12px', cursor: 'pointer', fontSize: '0.9rem' },
+    descInput: { width: '100%', minHeight: '600px', backgroundColor: 'transparent', border: 'none', color: 'var(--text-body)', fontSize: '1.1rem', lineHeight: '1.8', outline: 'none', resize: 'none', fontFamily: 'var(--font-body)', marginTop: '20px', whiteSpace: 'pre-wrap' },
+    markdownPreview: { minHeight: '600px', color: 'var(--text-body)', lineHeight: '1.7', fontSize: '1.05rem', fontFamily: 'Georgia, serif', marginTop: '20px' },
+    sidebarColumn: { flex: 1, minWidth: '300px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' },
+    portraitImage: { width: '100%', aspectRatio: '2 / 3', backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-subtle)', backgroundSize: 'cover', backgroundPosition: 'top center', position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)' },
+    uploadButtonSmall: { position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', border: '1px solid var(--border-subtle)', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', backdropFilter: 'blur(4px)' },
+    statsSectionSide: { backgroundColor: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' },
     statsHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-    addStatButton: { backgroundColor: '#222', color: '#ccc', border: '1px solid #333', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' },
+    addStatButton: { backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' },
     statsGrid: { display: 'flex', flexDirection: 'column', gap: '10px' },
     statRow: { display: 'flex', gap: '10px', alignItems: 'center' },
-    statInputKey: { flex: 1, backgroundColor: '#111', border: '1px solid #333', padding: '10px', borderRadius: '4px', color: '#aaa', fontWeight: 'bold', fontSize: '0.9rem' },
-    statInputValue: { flex: 2, backgroundColor: '#000', border: '1px solid #333', padding: '10px', borderRadius: '4px', color: '#fff', fontSize: '0.9rem' },
-    deleteStatBtn: { backgroundColor: 'transparent', border: 'none', color: '#555', fontSize: '1.2rem', cursor: 'pointer', padding: '0 5px' }
+    statInputKey: { flex: 1, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.85rem' },
+    statInputValue: { flex: 2, backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', padding: '8px', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '0.85rem' },
+    deleteStatBtn: { backgroundColor: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: '0 5px' }
 };
 
 export default EntityEditor;
