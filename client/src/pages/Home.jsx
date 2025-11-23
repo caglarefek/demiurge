@@ -1,8 +1,7 @@
-// client/src/pages/Home.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuOrbit, LuLayoutTemplate, LuPlus, LuCalendar, LuRocket, LuSettings, LuLibrary } from "react-icons/lu";
+import { APP_VERSION } from '../constants';
 
 function Home() {
     const [universes, setUniverses] = useState([]);
@@ -49,7 +48,7 @@ function Home() {
             <aside style={styles.sidebar}>
                 <div style={styles.logoArea}>
                     <h1 style={styles.logo}>DEMIURGE</h1>
-                    <span style={styles.version}>v0.3</span>
+                    <span style={styles.version}>{APP_VERSION}</span> {/* <-- Değişkeni kullan */}
                 </div>
 
                 {/* BÖLÜM 1: ÇALIŞMA ALANI */}
