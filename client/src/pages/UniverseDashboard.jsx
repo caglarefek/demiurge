@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { LuLayoutDashboard, LuUsers, LuMap, LuScroll, LuSwords, LuPlus, LuChevronLeft } from "react-icons/lu";
 
 function UniverseDashboard() {
     const { id } = useParams();
@@ -69,10 +70,10 @@ function UniverseDashboard() {
                 <div style={styles.universeTitle}>{universe.name}</div>
 
                 <nav style={styles.nav}>
-                    <NavButton label="🏠 Genel Bakış" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-                    <NavButton label="👤 Karakterler" active={activeTab === 'character'} onClick={() => setActiveTab('character')} />
-                    <NavButton label="🏰 Mekanlar" active={activeTab === 'location'} onClick={() => setActiveTab('location')} />
-                    <NavButton label="📜 Lore & Tarih" active={activeTab === 'lore'} onClick={() => setActiveTab('lore')} />
+                    <NavButton icon={<LuLayoutDashboard />} label="Genel Bakış" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                    <NavButton icon={<LuUsers />} label="Karakterler" active={activeTab === 'character'} onClick={() => setActiveTab('character')} />
+                    <NavButton icon={<LuMap />} label="Mekanlar" active={activeTab === 'location'} onClick={() => setActiveTab('location')} />
+                    <NavButton icon={<LuScroll />} label="Lore & Tarih" active={activeTab === 'lore'} onClick={() => setActiveTab('lore')} />
                 </nav>
             </aside>
 
@@ -90,7 +91,16 @@ function UniverseDashboard() {
                     {/* Sadece Genel Bakış'ta olmayan sekmelerde 'Yeni Ekle' butonu göster */}
                     {activeTab !== 'overview' && (
                         <button style={styles.addButton} onClick={() => setShowForm(!showForm)}>
-                            {showForm ? 'İptal' : '+ Yeni Ekle'}
+                            {/* Eğer form açıksa Çarpı (LuX), kapalıysa Artı (LuPlus) göster */}
+                            {showForm ? (
+                                <>
+                                    <LuX size={18} /> İptal
+                                </>
+                            ) : (
+                                <>
+                                    <LuPlus size={18} /> Yeni Ekle
+                                </>
+                            )}
                         </button>
                     )}
                 </header>
@@ -128,7 +138,7 @@ function UniverseDashboard() {
                                 role="button" // Erişilebilirlik için
                             >
                                 <div style={styles.cardIcon}>
-                                    {entity.type === 'character' ? '👤' : entity.type === 'location' ? '🏰' : '📜'}
+                                    {entity.type === 'character' ? <LuUsers /> : entity.type === 'location' ? <LuMap /> : <LuScroll />}
                                 </div>
                                 <div>
                                     <h4 style={styles.cardTitle}>{entity.name}</h4>
@@ -143,40 +153,63 @@ function UniverseDashboard() {
     );
 }
 
-// Yardımcı Bileşen: Menü Butonu
-const NavButton = ({ label, active, onClick }) => (
+// Yardımcı Bileşen: Menü Butonu (İkon Destekli)
+const NavButton = ({ label, icon, active, onClick }) => (
     <div onClick={onClick} style={{
         ...styles.navItem,
-        backgroundColor: active ? '#222' : 'transparent',
-        color: active ? '#fff' : '#888',
-        fontWeight: active ? 'bold' : 'normal'
+        backgroundColor: active ? 'var(--bg-card-hover)' : 'transparent',
+        color: active ? 'var(--text-primary)' : 'var(--text-body)',
+        borderLeft: active ? '2px solid var(--accent)' : '2px solid transparent', // Aktifken solda çizgi
     }}>
-        {label}
+        <span style={{ fontSize: '1.2rem', display:'flex' }}>{icon}</span>
+        <span>{label}</span>
     </div>
 );
 
 const styles = {
-    container: { display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' },
-    sidebar: { width: '240px', backgroundColor: '#111', borderRight: '1px solid #2a2a2a', padding: '20px', display: 'flex', flexDirection: 'column' },
-    backArea: { marginBottom: '20px' },
-    backLink: { color: '#666', textDecoration: 'none', fontSize: '0.9rem' },
-    universeTitle: { color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '30px', paddingBottom: '10px', borderBottom: '1px solid #2a2a2a' },
-    nav: { display: 'flex', flexDirection: 'column', gap: '5px' },
-    navItem: { padding: '10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' },
+    container: { display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'var(--bg-main)' },
 
-    main: { flex: 1, padding: '50px', overflowY: 'auto', backgroundColor: '#0a0a0a' },
-    header: { marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #222', paddingBottom: '20px' },
-    addButton: { backgroundColor: '#ededed', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+    // Sidebar
+    sidebar: { width: '260px', backgroundColor: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-subtle)', padding: '25px', display: 'flex', flexDirection: 'column' },
+    backArea: { marginBottom: '30px' },
+    backLink: { color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px', transition: 'color 0.2s' },
+    universeTitle: { fontSize: '1.4rem', marginBottom: '40px', paddingBottom: '15px', borderBottom: '1px solid var(--border-subtle)', letterSpacing: '1px' },
 
-    formBox: { backgroundColor: '#111', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #333', display: 'flex', gap: '10px' },
-    input: { flex: 1, padding: '10px', backgroundColor: '#000', border: '1px solid #333', color: 'white', borderRadius: '4px' },
-    saveButton: { backgroundColor: '#d4d4d4', border: 'none', padding: '0 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+    nav: { display: 'flex', flexDirection: 'column', gap: '8px' },
+    navItem: { padding: '12px 15px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s' },
 
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' },
-    card: { backgroundColor: '#111', border: '1px solid #2a2a2a', padding: '15px', borderRadius: '6px', display: 'flex', gap: '15px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s' },
-    cardIcon: { fontSize: '1.5rem', opacity: 0.5 },
-    cardTitle: { margin: '0 0 5px 0', color: '#eee' },
-    cardDesc: { margin: 0, fontSize: '0.85rem', color: '#666' }
+    // Main
+    main: { flex: 1, padding: '60px', overflowY: 'auto' },
+    header: { marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '20px' },
+
+    addButton: {
+        backgroundColor: 'var(--text-primary)', color: 'var(--bg-main)', border: 'none',
+        padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600',
+        display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem'
+    },
+
+    // Form ve Grid
+    formBox: { backgroundColor: 'var(--bg-card)', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid var(--border-light)', display: 'flex', gap: '10px' },
+    input: { flex: 1, padding: '12px', backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', borderRadius: '6px', outline: 'none', fontFamily: 'var(--font-body)' },
+    saveButton: { backgroundColor: 'var(--accent)', color: '#000', border: 'none', padding: '0 25px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
+
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
+    card: {
+        backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', padding: '20px',
+        borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'start',
+        cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    },
+    cardIcon: { fontSize: '1.8rem', color: 'var(--text-muted)', marginTop: '5px' },
+    cardTitle: { margin: '0 0 6px 0', fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '600' },
+    cardDesc: { margin: 0, fontSize: '0.9rem', color: 'var(--text-body)', lineHeight: '1.5' },
+
+    // İstatistik kutuları (Genel Bakış için)
+    contentBox: { backgroundColor: 'var(--bg-card)', padding: '30px', borderRadius: '12px', border: '1px solid var(--border-subtle)' },
+    statsGrid: { display: 'flex', gap: '20px', marginTop: '20px' },
+    statCard: {
+        backgroundColor: 'var(--bg-main)', padding: '25px', borderRadius: '8px', minWidth: '120px', textAlign: 'center',
+        border: '1px solid var(--border-light)'
+    }
 };
 
 export default UniverseDashboard;

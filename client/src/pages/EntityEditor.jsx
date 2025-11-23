@@ -47,6 +47,30 @@ function EntityEditor() {
         }
     };
 
+    // Varlığı Silme Fonksiyonu
+    const handleDelete = async () => {
+        // 1. Kullanıcıdan onay iste (Güvenlik kilidi)
+        if (!window.confirm(`"${name}" adlı varlığı silmek istediğine emin misin? Bu işlem geri alınamaz!`)) {
+            return;
+        }
+
+        try {
+            // 2. Silme isteği gönder
+            const response = await fetch(`/api/entities/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // 3. Başarılıysa bir önceki sayfaya (Dashboard) dön
+                navigate(-1);
+            } else {
+                alert('Silme işlemi başarısız oldu.');
+            }
+        } catch (error) {
+            console.error('Silme hatası:', error);
+        }
+    };
+
     // Resim seçilince otomatik çalışacak fonksiyon
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
@@ -124,9 +148,16 @@ function EntityEditor() {
             {/* --- EDİTÖR BAŞLIK VE İÇERİK --- */}
             <div style={styles.editorContainer}>
                 {/* Üst Bar (Geri ve Kaydet) */}
+                {/* Üst Bar (Geri, Sil, Tür, Kaydet) */}
                 <div style={styles.topBar}>
-                    <button onClick={() => navigate(-1)} style={styles.backButton}>← Geri</button>
+                    <div style={{display:'flex', gap:'10px'}}>
+                        <button onClick={() => navigate(-1)} style={styles.backButton}>← Geri</button>
+                        {/* YENİ EKLENEN SİL BUTONU */}
+                        <button onClick={handleDelete} style={styles.deleteButton}>🗑️ Sil</button>
+                    </div>
+
                     <span style={styles.typeTag}>{entity.type.toUpperCase()}</span>
+
                     <button onClick={handleSave} style={styles.saveButton}>
                         {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
                     </button>
@@ -361,6 +392,17 @@ const styles = {
         fontSize: '1.05rem',
         fontFamily: 'Georgia, serif', // Okuma modunda daha edebi bir font
         paddingBottom: '50px' // Rahat okuma payı
+    },
+    deleteButton: {
+        backgroundColor: 'transparent',
+        color: '#ff4444', // Kırmızı yazı
+        border: '1px solid #ff4444', // Kırmızı çerçeve
+        padding: '6px 12px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '0.9rem',
+        transition: 'all 0.2s',
+        fontWeight: 'bold'
     }
 };
 

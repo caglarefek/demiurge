@@ -93,4 +93,15 @@ router.post('/:id/image', upload.single('image'), async (req, res) => {
     }
 });
 
+// DELETE: Bir varlığı sil
+router.delete('/:id', async (req, res) => {
+    try {
+        const deletedEntity = await Entity.findByIdAndDelete(req.params.id);
+        if (!deletedEntity) return res.status(404).json({ message: 'Varlık bulunamadı' });
+        res.json({ message: 'Varlık başarıyla silindi' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
