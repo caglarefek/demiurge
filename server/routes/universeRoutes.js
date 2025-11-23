@@ -29,4 +29,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    try {
+        const universe = await Universe.findById(req.params.id);
+        if (!universe) return res.status(404).json({ message: 'Evren bulunamadı' });
+        res.json(universe);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
