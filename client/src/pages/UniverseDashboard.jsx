@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 function UniverseDashboard() {
     const { id } = useParams();
@@ -11,6 +11,8 @@ function UniverseDashboard() {
     const [showForm, setShowForm] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDesc, setNewDesc] = useState('');
+
+    const navigate = useNavigate();
 
     // 1. Evren Bilgisini Çek
     useEffect(() => {
@@ -119,7 +121,12 @@ function UniverseDashboard() {
                         {entities.length === 0 && !showForm && <p style={{color:'#666'}}>Burada henüz hiç kayıt yok.</p>}
 
                         {entities.map(entity => (
-                            <div key={entity._id} style={styles.card}>
+                            <div
+                                key={entity._id}
+                                style={styles.card}
+                                onClick={() => navigate(`/entity/${entity._id}`)} // <-- Tıklama özelliği
+                                role="button" // Erişilebilirlik için
+                            >
                                 <div style={styles.cardIcon}>
                                     {entity.type === 'character' ? '👤' : entity.type === 'location' ? '🏰' : '📜'}
                                 </div>
@@ -166,7 +173,7 @@ const styles = {
     saveButton: { backgroundColor: '#d4d4d4', border: 'none', padding: '0 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
 
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' },
-    card: { backgroundColor: '#111', border: '1px solid #2a2a2a', padding: '15px', borderRadius: '6px', display: 'flex', gap: '15px', alignItems: 'center' },
+    card: { backgroundColor: '#111', border: '1px solid #2a2a2a', padding: '15px', borderRadius: '6px', display: 'flex', gap: '15px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s' },
     cardIcon: { fontSize: '1.5rem', opacity: 0.5 },
     cardTitle: { margin: '0 0 5px 0', color: '#eee' },
     cardDesc: { margin: 0, fontSize: '0.85rem', color: '#666' }

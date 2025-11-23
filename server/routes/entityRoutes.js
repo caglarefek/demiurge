@@ -39,4 +39,33 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET: Tek bir varlığın detayını getir (Editör için)
+router.get('/:id', async (req, res) => {
+    try {
+        const entity = await Entity.findById(req.params.id);
+        if (!entity) return res.status(404).json({ message: 'Varlık bulunamadı' });
+        res.json(entity);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// PUT: Varlığı güncelle (İsim veya Açıklama değişince)
+router.put('/:id', async (req, res) => {
+    try {
+        const { name, description } = req.body;
+
+        // Sadece gelen verileri güncelle
+        const updatedEntity = await Entity.findByIdAndUpdate(
+            req.params.id,
+            { name, description },
+            { new: true } // Güncellenmiş halini geri döndür
+        );
+
+        res.json(updatedEntity);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 module.exports = router;
