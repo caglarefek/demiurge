@@ -19,6 +19,10 @@ const EntitySchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    imageUrl: {
+        type: String, // Resmin dosya yolu (örn: '/uploads/resim.jpg')
+        default: ''   // Başlangıçta resim yok
+    },
     // İleride buraya 'attributes' (Güç, Çeviklik vb.) ekleyeceğiz.
     createdAt: {
         type: Date,
