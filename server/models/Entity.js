@@ -23,6 +23,11 @@ const EntitySchema = new mongoose.Schema({
         type: String, // Resmin dosya yolu (örn: '/uploads/resim.jpg')
         default: ''   // Başlangıçta resim yok
     },
+    // Esnek özellik listesi (Örn: [{ key: "Güç", value: "18" }, { key: "Sınıf", value: "Büyücü" }])
+    attributes: [{
+        key: { type: String, required: true },
+        value: { type: String, required: true }
+    }],
     // İleride buraya 'attributes' (Güç, Çeviklik vb.) ekleyeceğiz.
     createdAt: {
         type: Date,

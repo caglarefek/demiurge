@@ -7,6 +7,7 @@ function EntityEditor() {
     const fileInputRef = useRef(null); // Gizli dosya inputuna erişmek için
     const [imageUrl, setImageUrl] = useState(''); // Resim yolunu tutmak için
     const [uploading, setUploading] = useState(false); // Yükleniyor animasyonu için
+    const [attributes, setAttributes] = useState([]); // Özellik listesi
 
     const [entity, setEntity] = useState(null);
     const [name, setName] = useState('');
@@ -22,6 +23,7 @@ function EntityEditor() {
                 setName(data.name);
                 setDescription(data.description);
                 setImageUrl(data.imageUrl);
+                setAttributes(data.attributes || []);
             });
     }, [id]);
 
@@ -32,7 +34,7 @@ function EntityEditor() {
             await fetch(`/api/entities/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description })
+                body: JSON.stringify({ name, description, attributes })
             });
             // Kaydettikten sonra geri dönelim mi? Hayır, yazmaya devam edebilirsin.
             // Sadece kullanıcıya hissettirelim (butonda yazar).
@@ -64,6 +66,24 @@ function EntityEditor() {
         } finally {
             setUploading(false);
         }
+    };
+
+    // Yeni boş bir özellik satırı ekle
+    const addAttribute = () => {
+        setAttributes([...attributes, { key: '', value: '' }]);
+    };
+
+    // Bir özelliğin ismini veya değerini değiştir
+    const handleAttributeChange = (index, field, newValue) => {
+        const newAttributes = [...attributes];
+        newAttributes[index][field] = newValue;
+        setAttributes(newAttributes);
+    };
+
+    // Bir özelliği sil
+    const deleteAttribute = (index) => {
+        const newAttributes = attributes.filter((_, i) => i !== index);
+        setAttributes(newAttributes);
     };
 
     if (!entity) return <div style={{padding:'40px', color:'white'}}>Yükleniyor...</div>;
@@ -124,6 +144,35 @@ function EntityEditor() {
                     style={styles.descInput}
                     placeholder="Hikayeni buraya yaz..."
                 />
+
+                {/* --- ÖZELLİKLER (STATS) BÖLÜMÜ --- */}
+                <div style={styles.statsSection}>
+                    <div style={styles.statsHeader}>
+                        <h3 style={{color: '#888', margin:0, fontSize:'1rem'}}>Özellikler & Statlar</h3>
+                        <button onClick={addAttribute} style={styles.addStatButton}>+ Ekle</button>
+                    </div>
+
+                    <div style={styles.statsGrid}>
+                        {attributes.map((attr, index) => (
+                            <div key={index} style={styles.statRow}>
+                                <input
+                                    placeholder="Özellik (Örn: Güç)"
+                                    value={attr.key}
+                                    onChange={(e) => handleAttributeChange(index, 'key', e.target.value)}
+                                    style={styles.statInputKey}
+                                />
+                                <input
+                                    placeholder="Değer (Örn: 18)"
+                                    value={attr.value}
+                                    onChange={(e) => handleAttributeChange(index, 'value', e.target.value)}
+                                    style={styles.statInputValue}
+                                />
+                                <button onClick={() => deleteAttribute(index)} style={styles.deleteStatBtn}>×</button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -194,6 +243,63 @@ const styles = {
         outline: 'none',
         resize: 'none',
         fontFamily: 'inherit'
+    },
+    statsSection: {
+        marginTop: '30px',
+        paddingTop: '20px',
+        borderTop: '1px solid #222'
+    },
+    statsHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '15px'
+    },
+    addStatButton: {
+        backgroundColor: '#222',
+        color: '#ccc',
+        border: '1px solid #333',
+        padding: '4px 10px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '0.8rem'
+    },
+    statsGrid: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+    },
+    statRow: {
+        display: 'flex',
+        gap: '10px',
+        alignItems: 'center'
+    },
+    statInputKey: {
+        flex: 1,
+        backgroundColor: '#111',
+        border: '1px solid #333',
+        padding: '10px',
+        borderRadius: '4px',
+        color: '#aaa',
+        fontWeight: 'bold',
+        fontSize: '0.9rem'
+    },
+    statInputValue: {
+        flex: 2, // Değer kısmı daha geniş olsun
+        backgroundColor: '#000',
+        border: '1px solid #333',
+        padding: '10px',
+        borderRadius: '4px',
+        color: '#fff',
+        fontSize: '0.9rem'
+    },
+    deleteStatBtn: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: '#555',
+        fontSize: '1.2rem',
+        cursor: 'pointer',
+        padding: '0 5px'
     }
 };
 

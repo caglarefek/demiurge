@@ -54,12 +54,12 @@ router.get('/:id', async (req, res) => {
 // PUT: Varlığı güncelle (İsim veya Açıklama değişince)
 router.put('/:id', async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, attributes } = req.body;
 
         // Sadece gelen verileri güncelle
         const updatedEntity = await Entity.findByIdAndUpdate(
             req.params.id,
-            { name, description },
+            { name, description, attributes },
             { new: true } // Güncellenmiş halini geri döndür
         );
 
