@@ -68,7 +68,7 @@ function Home() {
                 <div style={styles.navSection}>
                     <span style={styles.navHeader}>KÜTÜPHANE</span>
 
-                    <div style={styles.navItem}>
+                    <div style={styles.navItem} onClick={() => navigate('/templates')}> {/* <-- onClick EKLENDİ */}
                         <LuLayoutTemplate size={20} />
                         <span>Şablonlar</span>
                     </div>
