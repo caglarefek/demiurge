@@ -1,33 +1,33 @@
 const multer = require('multer');
 const path = require('path');
 
-// Depolama ayarları
+// Depolama ayarları (Dosyalar nereye kaydedilecek?)
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Dosyalar nereye kaydedilecek? 'uploads/' klasörüne.
-        cb(null, 'uploads/');
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // 'uploads' klasörüne kaydet
     },
-    filename: function (req, file, cb) {
-        // Dosya adı ne olacak?
-        // Orijinal adın başına o anki zaman damgasını ekle ki çakışma olmasın.
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+    filename: (req, file, cb) => {
+        // Dosya adını benzersiz yap (zaman damgası + orijinal uzantı)
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
-// Sadece resim dosyalarına izin verelim
+// Dosya filtresi (Sadece resimlere izin ver)
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
+        cb(null, true); // Kabul et
     } else {
-        cb(new Error('Sadece resim dosyaları yüklenebilir!'), false);
+        cb(new Error('Sadece resim dosyaları yüklenebilir!'), false); // Reddet
     }
 };
 
+// Multer konfigürasyonu
 const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // Max 5MB boyut sınırı
+    limits: {
+        fileSize: 10 * 1024 * 1024 // BURAYI DEĞİŞTİR: 10MB limit (10 * 1024 * 1024 byte)
+    }
 });
 
 module.exports = upload;

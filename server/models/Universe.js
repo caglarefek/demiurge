@@ -6,7 +6,7 @@ const UniverseSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    description: {
+    imageUrl: {   // <-- Bu alanın olduğundan emin ol
         type: String,
         default: ''
     },

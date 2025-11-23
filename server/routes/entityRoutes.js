@@ -3,6 +3,8 @@ const router = express.Router();
 const Entity = require('../models/Entity');
 const Template = require('../models/Template');
 const upload = require('./uploadMiddleware');
+const fs = require('fs');
+const path = require('path');
 
 // POST: Yeni bir varlık oluştur (Şablon destekli)
 router.post('/', async (req, res) => {
@@ -90,14 +92,31 @@ router.put('/:id', async (req, res) => {
 // Bu rota 'upload.single' sayesinde dosyayı alır, kaydeder ve bize bilgisini verir.
 router.post('/:id/image', upload.single('image'), async (req, res) => {
     try {
-        const file = req.file;
-        if (!file) return res.status(400).json({ message: 'Lütfen bir resim seçin' });
+        const entity = await Entity.findById(req.params.id); // Entity modelini kullandığımıza dikkat
+        if (!entity) return res.status(404).json({ message: 'Varlık bulunamadı' });
 
-        // Resim yolunu oluştur (Windows/Mac uyumlu olması için düzeltmeler yapılabilir ama şimdilik basit tutalım)
-        // Örn: '/uploads/resim.jpg'
-        const imageUrl = `/uploads/${file.filename}`;
+        if (!req.file) return res.status(400).json({ message: 'Dosya seçilmedi' });
 
-        // Veritabanını güncelle
+        // --- ESKİ RESMİ SİLME İŞLEMİ ---
+        if (entity.imageUrl) {
+            const filename = entity.imageUrl.split('/uploads/')[1];
+
+            if (filename) {
+                const filePath = path.join(__dirname, '../uploads', filename);
+
+                fs.access(filePath, fs.constants.F_OK, (err) => {
+                    if (!err) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) console.error("Eski görsel silinirken hata:", err);
+                        });
+                    }
+                });
+            }
+        }
+        // -------------------------------
+
+        const imageUrl = `/uploads/${req.file.filename}`;
+
         const updatedEntity = await Entity.findByIdAndUpdate(
             req.params.id,
             { imageUrl: imageUrl },
@@ -110,12 +129,36 @@ router.post('/:id/image', upload.single('image'), async (req, res) => {
     }
 });
 
-// DELETE: Bir varlığı sil
+// DELETE: Bir varlığı sil (Görseliyle birlikte)
 router.delete('/:id', async (req, res) => {
     try {
-        const deletedEntity = await Entity.findByIdAndDelete(req.params.id);
-        if (!deletedEntity) return res.status(404).json({ message: 'Varlık bulunamadı' });
-        res.json({ message: 'Varlık başarıyla silindi' });
+        // 1. Önce silinecek varlığı bul (Veritabanından hemen silme!)
+        const entity = await Entity.findById(req.params.id);
+
+        if (!entity) {
+            return res.status(404).json({ message: 'Varlık bulunamadı' });
+        }
+
+        // 2. Eğer resmi varsa, diskten sil
+        if (entity.imageUrl) {
+            const filename = entity.imageUrl.split('/uploads/')[1]; // Dosya adını al
+            if (filename) {
+                const filePath = path.join(__dirname, '../uploads', filename);
+
+                // Dosya var mı diye bakmadan direkt silmeyi dene (Hata verirse de devam et)
+                fs.unlink(filePath, (err) => {
+                    if (err && err.code !== 'ENOENT') {
+                        // ENOENT: Dosya zaten yok demek (Sorun değil)
+                        console.error("Görsel silinirken hata oluştu:", err);
+                    }
+                });
+            }
+        }
+
+        // 3. Şimdi varlığı veritabanından sil
+        await Entity.findByIdAndDelete(req.params.id);
+
+        res.json({ message: 'Varlık ve görseli başarıyla silindi' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
