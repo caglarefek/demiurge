@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 function EntityEditor() {
     const { id } = useParams();
@@ -7,6 +8,7 @@ function EntityEditor() {
     const fileInputRef = useRef(null); // Gizli dosya inputuna erişmek için
     const [imageUrl, setImageUrl] = useState(''); // Resim yolunu tutmak için
     const [uploading, setUploading] = useState(false); // Yükleniyor animasyonu için
+    const [viewMode, setViewMode] = useState('write'); // 'write' (Yaz) veya 'preview' (Önizle)
     const [attributes, setAttributes] = useState([]); // Özellik listesi
 
     const [entity, setEntity] = useState(null);
@@ -138,12 +140,36 @@ function EntityEditor() {
                     placeholder="İsimsiz Varlık"
                 />
 
-                <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    style={styles.descInput}
-                    placeholder="Hikayeni buraya yaz..."
-                />
+                {/* --- SEKME BUTONLARI --- */}
+                <div style={styles.tabContainer}>
+                    <button
+                        onClick={() => setViewMode('write')}
+                        style={viewMode === 'write' ? styles.tabActive : styles.tabInactive}
+                    >
+                        ✏️ Yaz
+                    </button>
+                    <button
+                        onClick={() => setViewMode('preview')}
+                        style={viewMode === 'preview' ? styles.tabActive : styles.tabInactive}
+                    >
+                        👁️ Önizleme
+                    </button>
+                </div>
+
+                {/* --- İÇERİK ALANI (KOŞULLU GÖSTERİM) --- */}
+                {viewMode === 'write' ? (
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        style={styles.descInput}
+                        placeholder="Hikayeni Markdown formatında yaz... (# Başlık, **Kalın**)"
+                    />
+                ) : (
+                    <div style={styles.markdownPreview}>
+                        {/* Eğer yazı yoksa uyarı ver, varsa render et */}
+                        {description ? <ReactMarkdown>{description}</ReactMarkdown> : <span style={{color:'#444'}}>Henüz bir şey yazılmadı.</span>}
+                    </div>
+                )}
 
                 {/* --- ÖZELLİKLER (STATS) BÖLÜMÜ --- */}
                 <div style={styles.statsSection}>
@@ -300,6 +326,41 @@ const styles = {
         fontSize: '1.2rem',
         cursor: 'pointer',
         padding: '0 5px'
+    },
+    tabContainer: {
+        display: 'flex',
+        gap: '10px',
+        marginBottom: '10px',
+        borderBottom: '1px solid #222',
+        paddingBottom: '10px'
+    },
+    tabActive: {
+        backgroundColor: '#222',
+        color: '#fff',
+        border: 'none',
+        padding: '6px 12px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        fontSize: '0.9rem'
+    },
+    tabInactive: {
+        backgroundColor: 'transparent',
+        color: '#666',
+        border: 'none',
+        padding: '6px 12px',
+        cursor: 'pointer',
+        fontSize: '0.9rem'
+    },
+
+    // Markdown Önizleme Alanı Stilleri
+    markdownPreview: {
+        minHeight: '400px',
+        color: '#ccc',
+        lineHeight: '1.7',
+        fontSize: '1.05rem',
+        fontFamily: 'Georgia, serif', // Okuma modunda daha edebi bir font
+        paddingBottom: '50px' // Rahat okuma payı
     }
 };
 
