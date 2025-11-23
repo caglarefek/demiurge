@@ -45,10 +45,12 @@ router.post('/', async (req, res) => {
 // PUT: Evren ismini güncelle
 router.put('/:id', async (req, res) => {
     try {
-        const { name } = req.body;
+        // Sadece name değil, description bilgisini de al
+        const { name, description } = req.body;
+
         const updatedUniverse = await Universe.findByIdAndUpdate(
             req.params.id,
-            { name },
+            { name, description }, // İkisini de güncelle
             { new: true }
         );
         res.json(updatedUniverse);
